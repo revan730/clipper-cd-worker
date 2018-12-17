@@ -66,7 +66,7 @@ func (q *RMQQueue) publish(msg proto.Message, queue string) error {
 }
 
 // makeMsgChan creates channel to retranslate message bodies to
-func (q *RMQQueue) makeMsgChan(queue string) (chan []byte, error) {
+func (q *RMQQueue) makeMsgChan(queue string) (<-chan []byte, error) {
 	incomingMsgs, err := q.channel.Consume(queue, "", true, false, false, false, nil)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (q *RMQQueue) makeMsgChan(queue string) (chan []byte, error) {
 }
 
 // MakeCDMsgChan creates channel with raw CD job messages
-func (q *RMQQueue) MakeCDMsgChan() (chan []byte, error) {
+func (q *RMQQueue) MakeCDMsgChan() (<-chan []byte, error) {
 	return q.makeMsgChan(q.CDJobsQueue.Name)
 }
 
