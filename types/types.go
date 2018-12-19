@@ -2,6 +2,7 @@ package types
 
 type Deployment struct {
 	ID            int64  `json:"deploymentID"`
+	RepoID        int64  `json:"repoID"`
 	Branch        string `json:"branch"`
 	ArtifactID    int64  `json:"artifactID"`
 	K8SName       string `json:"k8sName"`

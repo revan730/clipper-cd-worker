@@ -12,6 +12,7 @@ import (
 func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
 	deployment := &types.Deployment{
 		Branch:     in.Branch,
+		RepoID:     in.RepoID,
 		ArtifactID: in.ArtifactID,
 		K8SName:    in.K8SName,
 		Manifest:   in.Manifest,
