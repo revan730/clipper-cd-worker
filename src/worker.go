@@ -58,6 +58,6 @@ func (w *Worker) logInfo(msg string) {
 
 // Run starts CD worker
 func (w *Worker) Run() {
-	w.apiServer.Run()
+	go w.apiServer.Run()
 	w.startConsuming()
 }

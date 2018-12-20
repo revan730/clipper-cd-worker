@@ -2,6 +2,7 @@ package src
 
 import (
 	"github.com/golang/protobuf/proto"
+	"github.com/revan730/clipper-cd-worker/types"
 	commonTypes "github.com/revan730/clipper-common/types"
 	"go.uber.org/zap"
 )
@@ -9,13 +10,14 @@ import (
 // executeCDJob rolls new image onto k8s deployment
 func (w *Worker) executeCDJob(CDJob commonTypes.CDJob) {
 	w.logInfo("Got CD job message")
+	// TODO: Get artifact gcr url using CI API
 }
 
 // initDeployment creates new deployment in k8s using manifest and
 // provided image url
-func (w *Worker) initDeployment(d commonTypes.Deployment) {
+func (w *Worker) initDeployment(d types.Deployment) {
 	w.logInfo("Initializing new deployment")
-	// TODO: Get artifact grc url using CI API
+	// TODO: Get artifact gcr url using CI API
 }
 
 func (w *Worker) startConsuming() {
