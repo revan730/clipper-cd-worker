@@ -22,6 +22,6 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 		s.logError("Create deployment error", err)
 		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()
 	}
+	s.deploymentsChan <- *deployment
 	return &commonTypes.Empty{}, nil
-	// TODO: Start deployment job
 }

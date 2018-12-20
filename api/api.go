@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/revan730/clipper-cd-worker/db"
-	"github.com/revan730/clipper-common/types"
+	"github.com/revan730/clipper-cd-worker/types"
+	commonTypes "github.com/revan730/clipper-common/types"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -17,16 +18,18 @@ type Config struct {
 }
 
 type Server struct {
-	logger         *zap.Logger
-	config         Config
-	databaseClient db.DatabaseClient
+	logger          *zap.Logger
+	config          Config
+	databaseClient  db.DatabaseClient
+	deploymentsChan chan types.Deployment
 }
 
 func NewServer(config Config, logger *zap.Logger, dbClient db.DatabaseClient) *Server {
 	server := &Server{
-		config:         config,
-		logger:         logger,
-		databaseClient: dbClient,
+		config:          config,
+		logger:          logger,
+		databaseClient:  dbClient,
+		deploymentsChan: make(chan types.Deployment),
 	}
 	return server
 }
@@ -46,6 +49,12 @@ func (s *Server) logInfo(msg string) {
 	s.logger.Info("INFO", zap.String("msg", msg), zap.String("packageLevel", "api"))
 }
 
+// GetDepsChan returns read only channel of Deployment type
+// used to inform cd worker about new deployments to init
+func (s *Server) GetDepsChan() <-chan types.Deployment {
+	return s.deploymentsChan
+}
+
 // Run starts api server
 func (s *Server) Run() {
 	defer s.databaseClient.Close()
@@ -60,7 +69,7 @@ func (s *Server) Run() {
 		s.logFatal("API server failed", err)
 	}
 	grpcServer := grpc.NewServer()
-	types.RegisterCDAPIServer(grpcServer, s)
+	commonTypes.RegisterCDAPIServer(grpcServer, s)
 	if err := grpcServer.Serve(lis); err != nil {
 		s.logFatal("failed to serve: %s", err)
 	}
