@@ -34,7 +34,8 @@ func (d *PostgresClient) Close() {
 // CreateSchema creates database tables if they not exist
 func (d *PostgresClient) CreateSchema() error {
 	for _, model := range []interface{}{
-		(*types.Deployment)(nil)} {
+		(*types.Deployment)(nil),
+		(*types.Revision)(nil)} {
 		err := d.pg.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists:   true,
 			FKConstraints: true,
@@ -49,4 +50,9 @@ func (d *PostgresClient) CreateSchema() error {
 // CreateDeployment creates k8s deployment record from provided struct
 func (d *PostgresClient) CreateDeployment(kd *types.Deployment) error {
 	return d.pg.Insert(kd)
+}
+
+// CreateDeployment creates deployment revision record from provided struct
+func (d *PostgresClient) CreateRevision(r *types.Revision) error {
+	return d.pg.Insert(r)
 }

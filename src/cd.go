@@ -28,7 +28,7 @@ func (w *Worker) startConsuming() {
 	if err != nil {
 		w.logFatal("Failed to create CD jobs channel", err)
 	}
-	cdApiChan := w.apiServer.GetDepsChan()
+	cdAPIChan := w.apiServer.GetDepsChan()
 
 	go func() {
 		for {
@@ -42,7 +42,7 @@ func (w *Worker) startConsuming() {
 					break
 				}
 				go w.executeCDJob(jobMsg)
-			case m := <-cdApiChan:
+			case m := <-cdAPIChan:
 				w.logInfo("New deployment: " + m.K8SName)
 				go w.initDeployment(m)
 			default:
