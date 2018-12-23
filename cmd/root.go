@@ -11,6 +11,7 @@ import (
 var (
 	serverPort int
 	rabbitAddr string
+	ciAddr     string
 	dbAddr     string
 	db         string
 	dbUser     string
@@ -30,6 +31,7 @@ var startCmd = &cobra.Command{
 		config := &src.Config{
 			Port:          serverPort,
 			RabbitAddress: rabbitAddr,
+			CIAddress:     ciAddr,
 			DBAddr:        dbAddr,
 			DB:            db,
 			DBUser:        dbUser,
@@ -59,6 +61,8 @@ func init() {
 		"Api gRPC port")
 	startCmd.Flags().StringVarP(&rabbitAddr, "rabbitmq", "r",
 		"amqp://guest:guest@localhost:5672", "Set redis address")
+	startCmd.Flags().StringVarP(&ciAddr, "ci", "g",
+		"ci-worker:8080", "Set CI gRPC address")
 	startCmd.Flags().StringVarP(&dbAddr, "postgresAddr", "a",
 		"postgres:5432", "Set PostsgreSQL address")
 	startCmd.Flags().StringVarP(&db, "db", "d",

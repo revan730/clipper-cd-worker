@@ -22,6 +22,12 @@ type Revision struct {
 	Replicas     int64     `json:"replicas"`
 }
 
+type ManifestValues struct {
+	Image    string
+	Name     string
+	Replicas int64
+}
+
 type PGClientConfig struct {
 	DBAddr     string
 	DB         string

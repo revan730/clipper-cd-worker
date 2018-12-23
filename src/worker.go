@@ -2,6 +2,7 @@ package src
 
 import (
 	"github.com/revan730/clipper-cd-worker/api"
+	"github.com/revan730/clipper-cd-worker/CIApi"
 	"github.com/revan730/clipper-cd-worker/db"
 	"github.com/revan730/clipper-cd-worker/queue"
 	"github.com/revan730/clipper-cd-worker/types"
@@ -13,6 +14,7 @@ type Worker struct {
 	config         *Config
 	jobsQueue      queue.Queue
 	databaseClient db.DatabaseClient
+	ciClient *CIApi.CIClient
 	apiServer      *api.Server
 	logger         *zap.Logger
 }
@@ -38,6 +40,8 @@ func NewWorker(config *Config, logger *zap.Logger) *Worker {
 	}
 	apiServer := api.NewServer(apiConfig, logger, dbClient)
 	worker.apiServer = apiServer
+	ciClient := CIApi.NewClient(config.CIAddress, logger)
+	worker.ciClient = ciClient
 	return worker
 }
 

@@ -5,6 +5,7 @@ type Config struct {
 	Port int
 	// RabbitAddress is used for rabbitmq connection
 	RabbitAddress string
+	CIAddress     string
 	DBAddr        string
 	DB            string
 	DBUser        string
