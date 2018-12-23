@@ -16,6 +16,7 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 		ArtifactID: in.ArtifactID,
 		K8SName:    in.K8SName,
 		Manifest:   in.Manifest,
+		Replicas:   in.Replicas,
 	}
 	err := s.databaseClient.CreateDeployment(deployment)
 	if err != nil {
