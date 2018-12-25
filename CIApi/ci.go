@@ -2,28 +2,27 @@ package CIApi
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/revan730/clipper-cd-worker/log"
 	commonTypes "github.com/revan730/clipper-common/types"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 type CIClient struct {
 	gClient commonTypes.CIAPIClient
-	logger  *zap.Logger
+	log     log.Logger
 }
 
-func NewClient(address string, logger *zap.Logger) *CIClient {
+func NewClient(address string, logger log.Logger) *CIClient {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't connect to CI gRPC: %s", err))
+		logger.LogFatal("Couldn't connect to CI gRPC", err)
 	}
 
 	c := commonTypes.NewCIAPIClient(conn)
 	client := &CIClient{
 		gClient: c,
-		logger:  logger,
+		log:     logger,
 	}
 	return client
 }

@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/revan730/clipper-cd-worker/db"
+	"github.com/revan730/clipper-cd-worker/log"
 	"github.com/revan730/clipper-cd-worker/types"
 	commonTypes "github.com/revan730/clipper-common/types"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -18,35 +18,20 @@ type Config struct {
 }
 
 type Server struct {
-	logger          *zap.Logger
+	log             log.Logger
 	config          Config
 	databaseClient  db.DatabaseClient
 	deploymentsChan chan types.Deployment
 }
 
-func NewServer(config Config, logger *zap.Logger, dbClient db.DatabaseClient) *Server {
+func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Server {
 	server := &Server{
 		config:          config,
-		logger:          logger,
+		log:             logger,
 		databaseClient:  dbClient,
 		deploymentsChan: make(chan types.Deployment),
 	}
 	return server
-}
-
-func (s *Server) logFatal(msg string, err error) {
-	defer s.logger.Sync()
-	s.logger.Fatal(msg, zap.Error(err))
-}
-
-func (s *Server) logError(msg string, err error) {
-	defer s.logger.Sync()
-	s.logger.Error(msg, zap.String("packageLevel", "api"), zap.Error(err))
-}
-
-func (s *Server) logInfo(msg string) {
-	defer s.logger.Sync()
-	s.logger.Info("INFO", zap.String("msg", msg), zap.String("packageLevel", "api"))
 }
 
 // GetDepsChan returns read only channel of Deployment type
@@ -61,16 +46,16 @@ func (s *Server) Run() {
 	rand.Seed(time.Now().UnixNano())
 	err := s.databaseClient.CreateSchema()
 	if err != nil {
-		s.logFatal("Failed to create database schema", err)
+		s.log.LogFatal("Failed to create database schema", err)
 	}
-	s.logger.Info("Starting api server", zap.Int("port", s.config.Port))
+	s.log.LogInfo(fmt.Sprintf("Starting api server at port %d", s.config.Port))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.config.Port))
 	if err != nil {
-		s.logFatal("API server failed", err)
+		s.log.LogFatal("API server failed", err)
 	}
 	grpcServer := grpc.NewServer()
 	commonTypes.RegisterCDAPIServer(grpcServer, s)
 	if err := grpcServer.Serve(lis); err != nil {
-		s.logFatal("failed to serve: %s", err)
+		s.log.LogFatal("failed to serve gRPC API", err)
 	}
 }

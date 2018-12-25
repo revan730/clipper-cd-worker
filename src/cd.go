@@ -8,7 +8,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/revan730/clipper-cd-worker/types"
 	commonTypes "github.com/revan730/clipper-common/types"
-	"go.uber.org/zap"
 )
 
 func renderManifestTemplate(manifest string, params types.ManifestValues) (string, error) {
@@ -27,7 +26,7 @@ func renderManifestTemplate(manifest string, params types.ManifestValues) (strin
 
 // executeCDJob rolls new image onto k8s deployment
 func (w *Worker) executeCDJob(CDJob commonTypes.CDJob) {
-	w.logInfo("Got CD job message")
+	w.log.LogInfo("Got CD job message")
 	// TODO: Get artifact gcr url using CI API
 	// TODO: Call kubectl to change image
 	// TODO: Record result to revisions
@@ -36,10 +35,10 @@ func (w *Worker) executeCDJob(CDJob commonTypes.CDJob) {
 // initDeployment creates new deployment in k8s using manifest and
 // provided image url
 func (w *Worker) initDeployment(d types.Deployment) {
-	w.logInfo("Initializing new deployment")
+	w.log.LogInfo("Initializing new deployment")
 	artifact, err := w.ciClient.GetBuildArtifactByID(d.ArtifactID)
 	if err != nil {
-		w.logError("Failed to get build artifact", err)
+		w.log.LogError("Failed to get build artifact", err)
 	}
 	manifestVals := types.ManifestValues{
 		Name:     d.K8SName,
@@ -48,7 +47,7 @@ func (w *Worker) initDeployment(d types.Deployment) {
 	}
 	manifest, err := renderManifestTemplate(d.Manifest, manifestVals)
 	if err != nil {
-		w.logError("Failed to render manifest template", err)
+		w.log.LogError("Failed to render manifest template", err)
 	}
 	fmt.Println("Manifest:\n" + manifest)
 	// TODO: Call kubectl to create deployment
@@ -62,7 +61,7 @@ func (w *Worker) startConsuming() {
 
 	cdMsgsQueue, err := w.jobsQueue.MakeCDMsgChan()
 	if err != nil {
-		w.logFatal("Failed to create CD jobs channel", err)
+		w.log.LogFatal("Failed to create CD jobs channel", err)
 	}
 	cdAPIChan := w.apiServer.GetDepsChan()
 
@@ -70,21 +69,22 @@ func (w *Worker) startConsuming() {
 		for {
 			select {
 			case m := <-cdMsgsQueue:
-				w.logger.Info("Received message from queue: ", zap.ByteString("body", m))
+				body := string(m)
+				w.log.LogInfo("Received message from queue: " + body)
 				jobMsg := commonTypes.CDJob{}
 				err := proto.Unmarshal(m, &jobMsg)
 				if err != nil {
-					w.logError("Failed to unmarshal job message", err)
+					w.log.LogError("Failed to unmarshal job message", err)
 					break
 				}
 				go w.executeCDJob(jobMsg)
 			case m := <-cdAPIChan:
-				w.logInfo("New deployment: " + m.K8SName)
+				w.log.LogInfo("New deployment: " + m.K8SName)
 				go w.initDeployment(m)
 			}
 		}
 	}()
 
-	w.logInfo("Worker started")
+	w.log.LogInfo("Worker started")
 	<-blockMain
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/revan730/clipper-cd-worker/log"
 	"github.com/revan730/clipper-cd-worker/src"
 	"github.com/spf13/cobra"
 )
@@ -39,7 +40,7 @@ var startCmd = &cobra.Command{
 			Verbose:       logVerbose,
 		}
 
-		logger := src.NewLogger(logVerbose)
+		logger := log.NewLogger(logVerbose)
 
 		worker := src.NewWorker(config, logger)
 		worker.Run()
