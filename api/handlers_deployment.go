@@ -20,7 +20,7 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 	}
 	err := s.databaseClient.CreateDeployment(deployment)
 	if err != nil {
-		s.log.LogError("Create deployment error", err)
+		s.log.Error("Create deployment error", err)
 		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()
 	}
 	s.deploymentsChan <- *deployment

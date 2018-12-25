@@ -16,7 +16,7 @@ type CIClient struct {
 func NewClient(address string, logger log.Logger) *CIClient {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
-		logger.LogFatal("Couldn't connect to CI gRPC", err)
+		logger.Fatal("Couldn't connect to CI gRPC", err)
 	}
 
 	c := commonTypes.NewCIAPIClient(conn)

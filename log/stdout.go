@@ -35,20 +35,20 @@ func NewLogger(verbose bool) *StdoutLogger {
 	return stdoutLogger
 }
 
-// LogInfo creates information level log
-func (l *StdoutLogger) LogInfo(i string) {
+// Info creates information level log
+func (l *StdoutLogger) Info(i string) {
 	defer l.logger.Sync()
 	l.logger.Info("INFO", zap.String("msg", i))
 }
 
-// LogError creates error level log along with error details
-func (l *StdoutLogger) LogError(msg string, err error) {
+// Error creates error level log along with error details
+func (l *StdoutLogger) Error(msg string, err error) {
 	defer l.logger.Sync()
 	l.logger.Error(msg, zap.Error(err))
 }
 
-// LogFatal creates fatal level log which also terminates execution
-func (l *StdoutLogger) LogFatal(msg string, err error) {
+// Fatal creates fatal level log which also terminates execution
+func (l *StdoutLogger) Fatal(msg string, err error) {
 	defer l.logger.Sync()
 	l.logger.Fatal(msg, zap.Error(err))
 }

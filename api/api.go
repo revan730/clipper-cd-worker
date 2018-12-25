@@ -46,16 +46,16 @@ func (s *Server) Run() {
 	rand.Seed(time.Now().UnixNano())
 	err := s.databaseClient.CreateSchema()
 	if err != nil {
-		s.log.LogFatal("Failed to create database schema", err)
+		s.log.Fatal("Failed to create database schema", err)
 	}
-	s.log.LogInfo(fmt.Sprintf("Starting api server at port %d", s.config.Port))
+	s.log.Info(fmt.Sprintf("Starting api server at port %d", s.config.Port))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.config.Port))
 	if err != nil {
-		s.log.LogFatal("API server failed", err)
+		s.log.Fatal("API server failed", err)
 	}
 	grpcServer := grpc.NewServer()
 	commonTypes.RegisterCDAPIServer(grpcServer, s)
 	if err := grpcServer.Serve(lis); err != nil {
-		s.log.LogFatal("failed to serve gRPC API", err)
+		s.log.Fatal("failed to serve gRPC API", err)
 	}
 }

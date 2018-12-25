@@ -1,7 +1,7 @@
 package log
 
 type Logger interface {
-	LogInfo(i string)
-	LogError(msg string, err error)
-	LogFatal(msg string, err error)
+	Info(i string)
+	Error(msg string, err error)
+	Fatal(msg string, err error)
 }
