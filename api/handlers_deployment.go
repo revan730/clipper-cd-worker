@@ -19,6 +19,7 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 		Replicas:   in.Replicas,
 	}
 	err := s.databaseClient.CreateDeployment(deployment)
+	// TODO: Handle 'already exists' error
 	if err != nil {
 		s.log.Error("Create deployment error", err)
 		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()

@@ -39,6 +39,7 @@ func (w *Worker) initDeployment(d types.Deployment) {
 	artifact, err := w.ciClient.GetBuildArtifactByID(d.ArtifactID)
 	if err != nil {
 		w.log.Error("Failed to get build artifact", err)
+		return
 	}
 	manifestVals := types.ManifestValues{
 		Name:     d.K8SName,
@@ -48,9 +49,15 @@ func (w *Worker) initDeployment(d types.Deployment) {
 	manifest, err := renderManifestTemplate(d.Manifest, manifestVals)
 	if err != nil {
 		w.log.Error("Failed to render manifest template", err)
+		return
 	}
 	fmt.Println("Manifest:\n" + manifest)
 	// TODO: Call kubectl to create deployment
+	ok, stdout := w.kubectl.CreateDeployment(manifest)
+	if ok != true {
+		fmt.Println("fucked up")
+	}
+	fmt.Println("stdout: "+stdout)
 	// TODO: Record result to revisions
 	// TODO: Change deployment isInitialized flag
 }
