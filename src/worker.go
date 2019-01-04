@@ -5,6 +5,7 @@ import (
 	"github.com/revan730/clipper-cd-worker/CIApi"
 	"github.com/revan730/clipper-cd-worker/db"
 	"github.com/revan730/clipper-cd-worker/kubectl"
+	"github.com/revan730/clipper-cd-worker/distlock"
 	"github.com/revan730/clipper-cd-worker/queue"
 	"github.com/revan730/clipper-cd-worker/types"
 	"github.com/revan730/clipper-cd-worker/log"
@@ -16,6 +17,7 @@ type Worker struct {
 	jobsQueue      queue.Queue
 	kubectl *kubectl.Kubectl
 	databaseClient db.DatabaseClient
+	distLock distlock.DistLock
 	ciClient *CIApi.CIClient
 	apiServer      *api.Server
 	log         log.Logger
@@ -47,6 +49,8 @@ func NewWorker(config *Config, logger log.Logger) *Worker {
 	// TODO: kubectl config path from app config
 	kubectl := kubectl.NewKCtl("")
 	worker.kubectl = kubectl
+	distLock := distlock.NewRedisLock(config.RedisAddress, config.LockTimeout)
+	worker.distLock = distLock
 	return worker
 }
 

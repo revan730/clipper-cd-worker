@@ -2,7 +2,9 @@ module github.com/revan730/clipper-cd-worker
 
 require (
 	cloud.google.com/go v0.34.0 // indirect
+	github.com/bsm/redis-lock v8.0.0+incompatible
 	github.com/go-pg/pg v6.15.1+incompatible
+	github.com/go-redis/redis v6.15.0+incompatible
 	github.com/gogo/protobuf v1.2.0
 	github.com/golang/mock v1.2.0 // indirect
 	github.com/golang/protobuf v1.2.0

@@ -52,7 +52,18 @@ func (d *PostgresClient) CreateDeployment(kd *types.Deployment) error {
 	return d.pg.Insert(kd)
 }
 
-// CreateDeployment creates deployment revision record from provided struct
+// FindDeploymentsByRepo returns all deployments for provided repo id
+func (d *PostgresClient) FindDeploymentsByRepo(repoID int64) ([]types.Deployment, error) {
+	var deployments []types.Deployment
+
+	err := d.pg.Model(&deployments).
+		Where("repo_id = ?", repoID).
+		Select()
+
+	return deployments, err
+}
+
+// CreateRevision creates deployment revision record from provided struct
 func (d *PostgresClient) CreateRevision(r *types.Revision) error {
 	return d.pg.Insert(r)
 }

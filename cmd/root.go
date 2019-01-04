@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/revan730/clipper-cd-worker/log"
 	"github.com/revan730/clipper-cd-worker/src"
@@ -10,14 +11,16 @@ import (
 )
 
 var (
-	serverPort int
-	rabbitAddr string
-	ciAddr     string
-	dbAddr     string
-	db         string
-	dbUser     string
-	dbPass     string
-	logVerbose bool
+	serverPort  int
+	rabbitAddr  string
+	redisAddr   string
+	lockTimeout int
+	ciAddr      string
+	dbAddr      string
+	db          string
+	dbUser      string
+	dbPass      string
+	logVerbose  bool
 )
 
 var rootCmd = &cobra.Command{
@@ -32,6 +35,8 @@ var startCmd = &cobra.Command{
 		config := &src.Config{
 			Port:          serverPort,
 			RabbitAddress: rabbitAddr,
+			RedisAddress:  redisAddr,
+			LockTimeout:   time.Minute * time.Duration(lockTimeout),
 			CIAddress:     ciAddr,
 			DBAddr:        dbAddr,
 			DB:            db,
@@ -61,7 +66,11 @@ func init() {
 	startCmd.Flags().IntVarP(&serverPort, "port", "p", 8080,
 		"Api gRPC port")
 	startCmd.Flags().StringVarP(&rabbitAddr, "rabbitmq", "r",
-		"amqp://guest:guest@localhost:5672", "Set redis address")
+		"amqp://guest:guest@localhost:5672", "Set rabbitmq address")
+	startCmd.Flags().StringVarP(&redisAddr, "redis", "",
+		"redis:6379", "Set redis address")
+	startCmd.Flags().IntVarP(&lockTimeout, "lockTimeout", "",
+		10, "Set distributed lock timeout (minutes)")
 	startCmd.Flags().StringVarP(&ciAddr, "ci", "g",
 		"ci-worker:8080", "Set CI gRPC address")
 	startCmd.Flags().StringVarP(&dbAddr, "postgresAddr", "a",

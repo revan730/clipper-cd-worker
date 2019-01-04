@@ -3,6 +3,7 @@ package src
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"text/template"
 	"time"
 
@@ -25,12 +26,38 @@ func renderManifestTemplate(manifest string, params types.ManifestValues) (strin
 	return buf.String(), nil
 }
 
+// updateDeploymentImage calls kubectl to change deployment image, using
+// lock to syncronize update operations on deployment
+func (w *Worker) updateDeploymentImage(dep types.Deployment, artifactID int64) {
+	artifact, err := w.ciClient.GetBuildArtifactByID(dep.ArtifactID)
+	if err != nil {
+		w.log.Error("Failed to get build artifact", err)
+		return
+	}
+	w.log.Info("Got artifact with url " + artifact.Name)
+
+	err = w.distLock.Lock(strconv.FormatInt(dep.ID, 10))
+	if err != nil {
+		w.log.Error("Failed to acquire deployment lock", err)
+		return
+	}
+	// TODO: Call kubectl to change image
+	// TODO: Release operations lock
+	// TODO: Record result to revisions
+	// TODO: Update deployment in database
+}
+
 // executeCDJob rolls new image onto k8s deployment
 func (w *Worker) executeCDJob(CDJob commonTypes.CDJob) {
 	w.log.Info("Got CD job message")
-	// TODO: Get artifact gcr url using CI API
-	// TODO: Call kubectl to change image
-	// TODO: Record result to revisions
+	deployments, err := w.databaseClient.FindDeploymentsByRepo(CDJob.RepoID)
+	if err != nil {
+		w.log.Error("Failed to execute CD job", err)
+		return
+	}
+	for _, dep := range deployments {
+		go w.updateDeploymentImage(dep, CDJob.ArtifactID)
+	}
 }
 
 // initDeployment creates new deployment in k8s using manifest and
