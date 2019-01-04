@@ -56,3 +56,8 @@ func (d *PostgresClient) CreateDeployment(kd *types.Deployment) error {
 func (d *PostgresClient) CreateRevision(r *types.Revision) error {
 	return d.pg.Insert(r)
 }
+
+// SaveDeployment updates provided deployment in db
+func (d *PostgresClient) SaveDeployment(kd *types.Deployment) error {
+	return d.pg.Update(kd)
+}

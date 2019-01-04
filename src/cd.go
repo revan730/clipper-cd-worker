@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"text/template"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/revan730/clipper-cd-worker/types"
@@ -52,14 +53,29 @@ func (w *Worker) initDeployment(d types.Deployment) {
 		return
 	}
 	fmt.Println("Manifest:\n" + manifest)
-	// TODO: Call kubectl to create deployment
 	ok, stdout := w.kubectl.CreateDeployment(manifest)
 	if ok != true {
 		fmt.Println("fucked up")
 	}
-	fmt.Println("stdout: "+stdout)
-	// TODO: Record result to revisions
-	// TODO: Change deployment isInitialized flag
+	fmt.Println("stdout: " + stdout)
+	revision := &types.Revision{
+		DeploymentID: d.ID,
+		ArtifactID:   d.ArtifactID,
+		Date:         time.Now(),
+		Stdout:       stdout,
+		Replicas:     d.Replicas,
+	}
+	err = w.databaseClient.CreateRevision(revision)
+	if err != nil {
+		w.log.Error("Failed to write revision to db", err)
+	}
+	if ok == true {
+		d.IsInitialized = true
+		err = w.databaseClient.SaveDeployment(&d)
+		if err != nil {
+			w.log.Error("Failed to update deployment db record", err)
+		}
+	}
 }
 
 func (w *Worker) startConsuming() {

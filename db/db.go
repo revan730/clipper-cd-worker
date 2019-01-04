@@ -7,4 +7,6 @@ type DatabaseClient interface {
 	Close()
 	CreateSchema() error
 	CreateDeployment(kd *types.Deployment) error
+	CreateRevision(r *types.Revision) error
+	SaveDeployment(kd *types.Deployment) error
 }
