@@ -1,6 +1,7 @@
 package kubectl
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 )
 
 const manifestPathPrefix = "/tmp/clipper-tmp-manifest"
+const kubectlPath = "kubectl"
 
 type Kubectl struct {
 	configPath string
@@ -32,11 +34,23 @@ func (k Kubectl) CreateDeployment(manifest string) (bool, string) {
 	}
 	// execute kubectl
 	ok := true
-	out, err := exec.Command("kubectl", "create", "-f", manifestPath).CombinedOutput()
+	out, err := exec.Command(kubectlPath, "create", "-f", manifestPath).CombinedOutput()
 	if err != nil {
 		ok = false
 	}
 	// remove temporary manifest file
 	os.Remove(manifestPath)
+	return ok, string(out)
+}
+
+// ChangeImage calls kubectl to change deployment's container image
+func (k Kubectl) ChangeImage(deployment, imageURL string) (bool, string) {
+	ok := true
+	depParameter := fmt.Sprintf("deployment/%s", deployment)
+	container := fmt.Sprintf("%s=%s", deployment, imageURL)
+	out, err := exec.Command(kubectlPath, "set", "image", depParameter, container).CombinedOutput()
+	if err != nil {
+		ok = false
+	}
 	return ok, string(out)
 }

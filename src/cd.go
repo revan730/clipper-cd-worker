@@ -26,6 +26,17 @@ func renderManifestTemplate(manifest string, params types.ManifestValues) (strin
 	return buf.String(), nil
 }
 
+func (w *Worker) recordRevision(d types.Deployment, stdout string) error {
+	revision := &types.Revision{
+		DeploymentID: d.ID,
+		ArtifactID:   d.ArtifactID,
+		Date:         time.Now(),
+		Stdout:       stdout,
+		Replicas:     d.Replicas,
+	}
+	return w.databaseClient.CreateRevision(revision)
+}
+
 // updateDeploymentImage calls kubectl to change deployment image, using
 // lock to syncronize update operations on deployment
 func (w *Worker) updateDeploymentImage(dep types.Deployment, artifactID int64) {
@@ -35,16 +46,29 @@ func (w *Worker) updateDeploymentImage(dep types.Deployment, artifactID int64) {
 		return
 	}
 	w.log.Info("Got artifact with url " + artifact.Name)
-
-	err = w.distLock.Lock(strconv.FormatInt(dep.ID, 10))
+	lockRes := strconv.FormatInt(dep.ID, 10)
+	err = w.distLock.Lock(lockRes)
 	if err != nil {
 		w.log.Error("Failed to acquire deployment lock", err)
 		return
 	}
-	// TODO: Call kubectl to change image
-	// TODO: Release operations lock
-	// TODO: Record result to revisions
-	// TODO: Update deployment in database
+	changedOk, stdout := w.kubectl.ChangeImage(dep.K8SName, artifact.Name)
+	err = w.distLock.Unlock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to release deployment lock", err)
+	}
+	err = w.recordRevision(dep, stdout)
+	if err != nil {
+		w.log.Error("Failed to record revision", err)
+	}
+	if changedOk == true {
+		dep.ArtifactID = artifact.ID
+		err = w.databaseClient.SaveDeployment(&dep)
+		if err != nil {
+			w.log.Error("Failed to save deployment to db", err)
+			return
+		}
+	}
 }
 
 // executeCDJob rolls new image onto k8s deployment
@@ -85,14 +109,7 @@ func (w *Worker) initDeployment(d types.Deployment) {
 		fmt.Println("fucked up")
 	}
 	fmt.Println("stdout: " + stdout)
-	revision := &types.Revision{
-		DeploymentID: d.ID,
-		ArtifactID:   d.ArtifactID,
-		Date:         time.Now(),
-		Stdout:       stdout,
-		Replicas:     d.Replicas,
-	}
-	err = w.databaseClient.CreateRevision(revision)
+	err = w.recordRevision(d, stdout)
 	if err != nil {
 		w.log.Error("Failed to write revision to db", err)
 	}
