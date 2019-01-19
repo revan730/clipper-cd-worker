@@ -27,3 +27,12 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 	s.deploymentsChan <- *deployment
 	return &commonTypes.Empty{}, nil
 }
+
+func (s *Server) ChangeImage(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
+	deployment := &types.Deployment{
+		ID:         in.ID,
+		ArtifactID: in.ArtifactID,
+	}
+	s.changeImageChan <- *deployment
+	return &commonTypes.Empty{}, nil
+}

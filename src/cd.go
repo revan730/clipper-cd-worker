@@ -84,6 +84,16 @@ func (w *Worker) executeCDJob(CDJob commonTypes.CDJob) {
 	}
 }
 
+func (w *Worker) updateImageFromProto(d types.Deployment) {
+	// Find deployment in database and call image update
+	deployment, err := w.databaseClient.FindDeployment(d.ID)
+	if err != nil {
+		w.log.Error("Failed to find deployment", err)
+		return
+	}
+	go w.updateDeploymentImage(*deployment, d.ArtifactID)
+}
+
 // initDeployment creates new deployment in k8s using manifest and
 // provided image url
 func (w *Worker) initDeployment(d types.Deployment) {
@@ -131,6 +141,7 @@ func (w *Worker) startConsuming() {
 		w.log.Fatal("Failed to create CD jobs channel", err)
 	}
 	cdAPIChan := w.apiServer.GetDepsChan()
+	changeImageChan := w.apiServer.GetImageChangeChan()
 
 	go func() {
 		for {
@@ -148,6 +159,8 @@ func (w *Worker) startConsuming() {
 			case m := <-cdAPIChan:
 				w.log.Info("New deployment: " + m.K8SName)
 				go w.initDeployment(m)
+			case m := <-changeImageChan:
+				go w.updateImageFromProto(m)
 			}
 		}
 	}()
