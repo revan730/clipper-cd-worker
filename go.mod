@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.2.0
 	github.com/onsi/ginkgo v1.7.0 // indirect
 	github.com/onsi/gomega v1.4.3 // indirect
-	github.com/revan730/clipper-common v0.0.0-20190119195352-b7bd66fa4c3a
+	github.com/revan730/clipper-common v0.0.0-20190119203351-74a32d32726b
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/streadway/amqp v0.0.0-20181205114330-a314942b2fd9

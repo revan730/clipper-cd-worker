@@ -36,3 +36,12 @@ func (s *Server) ChangeImage(ctx context.Context, in *commonTypes.Deployment) (*
 	s.changeImageChan <- *deployment
 	return &commonTypes.Empty{}, nil
 }
+
+func (s *Server) ScaleDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
+	deployment := &types.Deployment{
+		ID:       in.ID,
+		Replicas: in.Replicas,
+	}
+	s.scaleChan <- *deployment
+	return &commonTypes.Empty{}, nil
+}

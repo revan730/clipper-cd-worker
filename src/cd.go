@@ -57,12 +57,40 @@ func (w *Worker) updateDeploymentImage(dep types.Deployment, artifactID int64) {
 	if err != nil {
 		w.log.Error("Failed to release deployment lock", err)
 	}
+	dep.ArtifactID = artifact.ID
 	err = w.recordRevision(dep, stdout)
 	if err != nil {
 		w.log.Error("Failed to record revision", err)
 	}
 	if changedOk == true {
-		dep.ArtifactID = artifact.ID
+		err = w.databaseClient.SaveDeployment(&dep)
+		if err != nil {
+			w.log.Error("Failed to save deployment to db", err)
+			return
+		}
+	}
+}
+
+// scaleDeployment calls kubectl to scale deployment, using
+// lock to syncronize update operations on deployment
+func (w *Worker) scaleDeployment(dep types.Deployment, replicas int64) {
+	lockRes := strconv.FormatInt(dep.ID, 10)
+	err := w.distLock.Lock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to acquire deployment lock", err)
+		return
+	}
+	scaledOk, stdout := w.kubectl.ScaleDeployment(dep.K8SName, replicas)
+	err = w.distLock.Unlock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to release deployment lock", err)
+	}
+	dep.Replicas = replicas
+	err = w.recordRevision(dep, stdout)
+	if err != nil {
+		w.log.Error("Failed to record revision", err)
+	}
+	if scaledOk == true {
 		err = w.databaseClient.SaveDeployment(&dep)
 		if err != nil {
 			w.log.Error("Failed to save deployment to db", err)
@@ -92,6 +120,16 @@ func (w *Worker) updateImageFromProto(d types.Deployment) {
 		return
 	}
 	go w.updateDeploymentImage(*deployment, d.ArtifactID)
+}
+
+func (w *Worker) scaleFromProto(d types.Deployment) {
+	// Find deployment in database and call deployment scale
+	deployment, err := w.databaseClient.FindDeployment(d.ID)
+	if err != nil {
+		w.log.Error("Failed to find deployment", err)
+		return
+	}
+	go w.scaleDeployment(*deployment, d.Replicas)
 }
 
 // initDeployment creates new deployment in k8s using manifest and
@@ -142,6 +180,7 @@ func (w *Worker) startConsuming() {
 	}
 	cdAPIChan := w.apiServer.GetDepsChan()
 	changeImageChan := w.apiServer.GetImageChangeChan()
+	scaleChan := w.apiServer.GetScaleChan()
 
 	go func() {
 		for {
@@ -161,6 +200,8 @@ func (w *Worker) startConsuming() {
 				go w.initDeployment(m)
 			case m := <-changeImageChan:
 				go w.updateImageFromProto(m)
+			case m := <-scaleChan:
+				go w.scaleFromProto(m)
 			}
 		}
 	}()

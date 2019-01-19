@@ -54,3 +54,15 @@ func (k Kubectl) ChangeImage(deployment, imageURL string) (bool, string) {
 	}
 	return ok, string(out)
 }
+
+// ScaleDeployment calls kubectl to scale deployment to provided size
+func (k Kubectl) ScaleDeployment(deployment string, replicas int64) (bool, string) {
+	ok := true
+	depParameter := fmt.Sprintf("deployment/%s", deployment)
+	replicasParameter := fmt.Sprintf("--replicas=%d", replicas)
+	out, err := exec.Command(kubectlPath, "scale", depParameter, replicasParameter).CombinedOutput()
+	if err != nil {
+		ok = false
+	}
+	return ok, string(out)
+}

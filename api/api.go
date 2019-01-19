@@ -23,6 +23,7 @@ type Server struct {
 	databaseClient  db.DatabaseClient
 	deploymentsChan chan types.Deployment
 	changeImageChan chan types.Deployment
+	scaleChan chan types.Deployment
 }
 
 func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Server {
@@ -32,6 +33,7 @@ func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Se
 		databaseClient:  dbClient,
 		deploymentsChan: make(chan types.Deployment),
 		changeImageChan: make(chan types.Deployment),
+		scaleChan: make(chan types.Deployment),
 	}
 	return server
 }
@@ -46,6 +48,12 @@ func (s *Server) GetDepsChan() <-chan types.Deployment {
 // used to inform cd worker about image changes in deployments
 func (s *Server) GetImageChangeChan() <-chan types.Deployment {
 	return s.changeImageChan
+}
+
+// GetScaleChan returns read only channel of Deployment type
+// used to inform cd worker about deployments to be scaled
+func (s *Server) GetScaleChan() <-chan types.Deployment {
+	return s.scaleChan
 }
 
 // Run starts api server
