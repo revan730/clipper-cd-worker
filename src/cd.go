@@ -132,6 +132,30 @@ func (w *Worker) scaleFromProto(d types.Deployment) {
 	go w.scaleDeployment(*deployment, d.Replicas)
 }
 
+// deleteDeployment removes deployment from k8s
+func (w *Worker) deleteDeployment(d types.Deployment) bool {
+	artifact, err := w.ciClient.GetBuildArtifactByID(d.ArtifactID)
+	if err != nil {
+		w.log.Error("Failed to get build artifact", err)
+		return false
+	}
+	manifestVals := types.ManifestValues{
+		Name:     d.K8SName,
+		Image:    artifact.Name,
+		Replicas: d.Replicas,
+	}
+	manifest, err := renderManifestTemplate(d.Manifest, manifestVals)
+	if err != nil {
+		w.log.Error("Failed to render manifest template", err)
+		return false
+	}
+	ok, stdout := w.kubectl.DeleteDeployment(manifest)
+	if ok != true {
+		w.log.Info("Failed to delete deployment: " + stdout)
+	}
+	return ok
+}
+
 // initDeployment creates new deployment in k8s using manifest and
 // provided image url
 func (w *Worker) initDeployment(d types.Deployment) {
@@ -170,6 +194,34 @@ func (w *Worker) initDeployment(d types.Deployment) {
 	}
 }
 
+func (w *Worker) reInitDeployment(d types.Deployment, manifest string) {
+	lockRes := strconv.FormatInt(d.ID, 10)
+	err := w.distLock.Lock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to acquire deployment lock", err)
+		return
+	}
+	deleteOk := w.deleteDeployment(d)
+	if deleteOk == true {
+		d.Manifest = manifest
+		w.initDeployment(d)
+	}
+	err = w.distLock.Unlock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to release deployment lock", err)
+	}
+}
+
+func (w *Worker) updateManifestFromProto(d types.Deployment) {
+	// Find deployment in database and call deployment scale
+	deployment, err := w.databaseClient.FindDeployment(d.ID)
+	if err != nil {
+		w.log.Error("Failed to find deployment", err)
+		return
+	}
+	go w.reInitDeployment(*deployment, d.Manifest)
+}
+
 func (w *Worker) startConsuming() {
 	defer w.jobsQueue.Close()
 	blockMain := make(chan bool)
@@ -181,6 +233,7 @@ func (w *Worker) startConsuming() {
 	cdAPIChan := w.apiServer.GetDepsChan()
 	changeImageChan := w.apiServer.GetImageChangeChan()
 	scaleChan := w.apiServer.GetScaleChan()
+	reInitChan := w.apiServer.GetReInitChan()
 
 	go func() {
 		for {
@@ -202,6 +255,8 @@ func (w *Worker) startConsuming() {
 				go w.updateImageFromProto(m)
 			case m := <-scaleChan:
 				go w.scaleFromProto(m)
+			case m := <-reInitChan:
+				go w.updateManifestFromProto(m)
 			}
 		}
 	}()

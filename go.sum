@@ -49,6 +49,8 @@ github.com/revan730/clipper-common v0.0.0-20190119195352-b7bd66fa4c3a h1:kbQemcY
 github.com/revan730/clipper-common v0.0.0-20190119195352-b7bd66fa4c3a/go.mod h1:BxwJ1Y6nYIS+CIveHKhhDVpwnzqmq1BtZhxE5kZDMXY=
 github.com/revan730/clipper-common v0.0.0-20190119203351-74a32d32726b h1:z7EbdpeEUys1OCoCNm6eC3eMgq8vt2wesAqayMBoRvw=
 github.com/revan730/clipper-common v0.0.0-20190119203351-74a32d32726b/go.mod h1:BxwJ1Y6nYIS+CIveHKhhDVpwnzqmq1BtZhxE5kZDMXY=
+github.com/revan730/clipper-common v0.0.0-20190120143355-764638e2d1a5 h1:WUqVh0qi1VR649klrxQ+LGJJ088or7RdQJCVkUyNBDY=
+github.com/revan730/clipper-common v0.0.0-20190120143355-764638e2d1a5/go.mod h1:BxwJ1Y6nYIS+CIveHKhhDVpwnzqmq1BtZhxE5kZDMXY=
 github.com/spf13/cobra v0.0.3 h1:ZlrZ4XsMRm04Fr5pSFxBgfND2EBVa1nLpiy1stUsX/8=
 github.com/spf13/cobra v0.0.3/go.mod h1:1l0Ry5zgKvJasoi3XT1TypsSe7PqH0Sj9dhYf7v3XqQ=
 github.com/spf13/pflag v1.0.3 h1:zPAT6CGy6wXeQ7NtTnaTerfKOsV6V6F8agHXFiazDkg=
@@ -86,6 +88,8 @@ golang.org/x/net v0.0.0-20181220203305-927f97764cc3/go.mod h1:mL1N/T3taQHkDXs73r
 golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/net v0.0.0-20190110200230-915654e7eabc h1:Yx9JGxI1SBhVLFjpAkWMaO1TF+xyqtHLjZpvQboJGiM=
 golang.org/x/net v0.0.0-20190110200230-915654e7eabc/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+golang.org/x/net v0.0.0-20190119204137-ed066c81e75e h1:MDa3fSUp6MdYHouVmCCNz/zaH2a6CRcxY3VhT/K3C5Q=
+golang.org/x/net v0.0.0-20190119204137-ed066c81e75e/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
 golang.org/x/oauth2 v0.0.0-20190115181402-5dab4167f31c/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=

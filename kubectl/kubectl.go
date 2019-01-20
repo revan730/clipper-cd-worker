@@ -22,24 +22,41 @@ func NewKCtl(configPath string) *Kubectl {
 	}
 }
 
+func writeManifestFile(manifest string) (string, error) {
+	manifestPath := manifestPathPrefix + strconv.FormatInt(time.Now().Unix(), 10)
+	err := ioutil.WriteFile(manifestPath, []byte(manifest), 0644)
+	return manifestPath, err
+}
+
 // CreateDeployment calls kubectl to create deployment from provided manifest
 // first return parameter show if operation was successful, second is stdout combined with
 // stderr
 func (k Kubectl) CreateDeployment(manifest string) (bool, string) {
-	// Create temporary manifest file
-	manifestPath := manifestPathPrefix + strconv.FormatInt(time.Now().Unix(), 10)
-	err := ioutil.WriteFile(manifestPath, []byte(manifest), 0644)
+	manifestPath, err := writeManifestFile(manifest)
 	if err != nil {
 		return false, "Failed to write temporary file"
 	}
-	// execute kubectl
+	defer os.Remove(manifestPath)
 	ok := true
 	out, err := exec.Command(kubectlPath, "create", "-f", manifestPath).CombinedOutput()
 	if err != nil {
 		ok = false
 	}
-	// remove temporary manifest file
-	os.Remove(manifestPath)
+	return ok, string(out)
+}
+
+// DeleteDeployment calls kubectl to remove deployment using provided manifest
+func (k Kubectl) DeleteDeployment(manifest string) (bool, string) {
+	manifestPath, err := writeManifestFile(manifest)
+	if err != nil {
+		return false, "Failed to write temporary file"
+	}
+	defer os.Remove(manifestPath)
+	ok := true
+	out, err := exec.Command(kubectlPath, "delete", "-f", manifestPath).CombinedOutput()
+	if err != nil {
+		ok = false
+	}
 	return ok, string(out)
 }
 

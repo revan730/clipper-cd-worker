@@ -24,6 +24,7 @@ type Server struct {
 	deploymentsChan chan types.Deployment
 	changeImageChan chan types.Deployment
 	scaleChan chan types.Deployment
+	reInitChan chan types.Deployment
 }
 
 func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Server {
@@ -34,9 +35,12 @@ func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Se
 		deploymentsChan: make(chan types.Deployment),
 		changeImageChan: make(chan types.Deployment),
 		scaleChan: make(chan types.Deployment),
+		reInitChan: make(chan types.Deployment),
 	}
 	return server
 }
+
+// TODO: Too many channels
 
 // GetDepsChan returns read only channel of Deployment type
 // used to inform cd worker about new deployments to init
@@ -54,6 +58,13 @@ func (s *Server) GetImageChangeChan() <-chan types.Deployment {
 // used to inform cd worker about deployments to be scaled
 func (s *Server) GetScaleChan() <-chan types.Deployment {
 	return s.scaleChan
+}
+
+// GetReInitChan returns read only channel of Deployment type
+// used to inform cd worker about deployments to be reinitialized
+// with new manifest
+func (s *Server) GetReInitChan() <-chan types.Deployment {
+	return s.reInitChan
 }
 
 // Run starts api server
