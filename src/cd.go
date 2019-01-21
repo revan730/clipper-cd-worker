@@ -222,6 +222,25 @@ func (w *Worker) updateManifestFromProto(d types.Deployment) {
 	go w.reInitDeployment(*deployment, d.Manifest)
 }
 
+func (w *Worker) deleteFromProto(d types.Deployment) {
+	deployment, err := w.databaseClient.FindDeployment(d.ID)
+	if err != nil {
+		w.log.Error("Failed to find deployment", err)
+		return
+	}
+	lockRes := strconv.FormatInt(d.ID, 10)
+	err = w.distLock.Lock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to acquire deployment lock", err)
+		return
+	}
+	w.deleteDeployment(*deployment)
+	err = w.distLock.Unlock(lockRes)
+	if err != nil {
+		w.log.Error("Failed to release deployment lock", err)
+	}
+}
+
 func (w *Worker) startConsuming() {
 	defer w.jobsQueue.Close()
 	blockMain := make(chan bool)
@@ -230,10 +249,11 @@ func (w *Worker) startConsuming() {
 	if err != nil {
 		w.log.Fatal("Failed to create CD jobs channel", err)
 	}
-	cdAPIChan := w.apiServer.GetDepsChan()
+	initChan := w.apiServer.GetDepsChan()
 	changeImageChan := w.apiServer.GetImageChangeChan()
 	scaleChan := w.apiServer.GetScaleChan()
 	reInitChan := w.apiServer.GetReInitChan()
+	deleteChan := w.apiServer.GetDeleteChan()
 
 	go func() {
 		for {
@@ -248,7 +268,7 @@ func (w *Worker) startConsuming() {
 					break
 				}
 				go w.executeCDJob(jobMsg)
-			case m := <-cdAPIChan:
+			case m := <-initChan:
 				w.log.Info("New deployment: " + m.K8SName)
 				go w.initDeployment(m)
 			case m := <-changeImageChan:
@@ -257,6 +277,8 @@ func (w *Worker) startConsuming() {
 				go w.scaleFromProto(m)
 			case m := <-reInitChan:
 				go w.updateManifestFromProto(m)
+			case m := <-deleteChan:
+				go w.deleteFromProto(m)
 			}
 		}
 	}()

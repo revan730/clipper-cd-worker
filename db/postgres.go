@@ -52,6 +52,10 @@ func (d *PostgresClient) CreateDeployment(kd *types.Deployment) error {
 	return d.pg.Insert(kd)
 }
 
+func (d *PostgresClient) DeleteDeployment(kd *types.Deployment) error {
+	return d.pg.Delete(kd)
+}
+
 // FindDeploymentsByRepo returns all deployments for provided repo id
 func (d *PostgresClient) FindDeploymentsByRepo(repoID int64) ([]types.Deployment, error) {
 	var deployments []types.Deployment

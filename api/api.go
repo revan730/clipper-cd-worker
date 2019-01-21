@@ -23,8 +23,9 @@ type Server struct {
 	databaseClient  db.DatabaseClient
 	deploymentsChan chan types.Deployment
 	changeImageChan chan types.Deployment
-	scaleChan chan types.Deployment
-	reInitChan chan types.Deployment
+	scaleChan       chan types.Deployment
+	reInitChan      chan types.Deployment
+	deleteChan      chan types.Deployment
 }
 
 func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Server {
@@ -34,8 +35,9 @@ func NewServer(config Config, logger log.Logger, dbClient db.DatabaseClient) *Se
 		databaseClient:  dbClient,
 		deploymentsChan: make(chan types.Deployment),
 		changeImageChan: make(chan types.Deployment),
-		scaleChan: make(chan types.Deployment),
-		reInitChan: make(chan types.Deployment),
+		scaleChan:       make(chan types.Deployment),
+		reInitChan:      make(chan types.Deployment),
+		deleteChan:      make(chan types.Deployment),
 	}
 	return server
 }
@@ -65,6 +67,12 @@ func (s *Server) GetScaleChan() <-chan types.Deployment {
 // with new manifest
 func (s *Server) GetReInitChan() <-chan types.Deployment {
 	return s.reInitChan
+}
+
+// GetDeleteChan returns read only channel of Deployment type
+// used to inform cd worker about deployments to be deleted
+func (s *Server) GetDeleteChan() <-chan types.Deployment {
+	return s.deleteChan
 }
 
 // Run starts api server

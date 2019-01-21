@@ -54,3 +54,16 @@ func (s *Server) UpdateManifest(ctx context.Context, in *commonTypes.Deployment)
 	s.reInitChan <- *deployment
 	return &commonTypes.Empty{}, nil
 }
+
+func (s *Server) DeleteDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
+	deployment := &types.Deployment{
+		ID: in.ID,
+	}
+	err := s.databaseClient.DeleteDeployment(deployment)
+	if err != nil {
+		s.log.Error("Delete deployment error", err)
+		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()
+	}
+	s.deleteChan <- *deployment
+	return &commonTypes.Empty{}, nil
+}
