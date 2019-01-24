@@ -61,25 +61,24 @@ func Execute() {
 }
 
 func init() {
-	// TODO: Remove short flags
 	rootCmd.AddCommand(startCmd)
 	startCmd.Flags().IntVarP(&serverPort, "port", "p", 8080,
 		"Api gRPC port")
-	startCmd.Flags().StringVarP(&rabbitAddr, "rabbitmq", "r",
+	startCmd.Flags().StringVarP(&rabbitAddr, "rabbitmq", "",
 		"amqp://guest:guest@localhost:5672", "Set rabbitmq address")
 	startCmd.Flags().StringVarP(&redisAddr, "redis", "",
 		"redis:6379", "Set redis address")
 	startCmd.Flags().IntVarP(&lockTimeout, "lockTimeout", "",
 		10, "Set distributed lock timeout (minutes)")
-	startCmd.Flags().StringVarP(&ciAddr, "ci", "g",
+	startCmd.Flags().StringVarP(&ciAddr, "ci", "",
 		"ci-worker:8080", "Set CI gRPC address")
-	startCmd.Flags().StringVarP(&dbAddr, "postgresAddr", "a",
+	startCmd.Flags().StringVarP(&dbAddr, "dbAddr", "",
 		"postgres:5432", "Set PostsgreSQL address")
-	startCmd.Flags().StringVarP(&db, "db", "d",
+	startCmd.Flags().StringVarP(&db, "db", "",
 		"clipper", "Set PostgreSQL database to use")
-	startCmd.Flags().StringVarP(&dbUser, "user", "u",
+	startCmd.Flags().StringVarP(&dbUser, "user", "",
 		"clipper", "Set PostgreSQL user to use")
-	startCmd.Flags().StringVarP(&dbPass, "pass", "c",
+	startCmd.Flags().StringVarP(&dbPass, "pass", "",
 		"clipper", "Set PostgreSQL password to use")
 	startCmd.Flags().BoolVarP(&logVerbose, "verbose", "v",
 		false, "Show debug level logs",
