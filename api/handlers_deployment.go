@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/revan730/clipper-cd-worker/types"
@@ -56,12 +57,18 @@ func (s *Server) UpdateManifest(ctx context.Context, in *commonTypes.Deployment)
 }
 
 func (s *Server) DeleteDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
-	deployment := &types.Deployment{
-		ID: in.ID,
-	}
-	err := s.databaseClient.DeleteDeployment(deployment)
+	deployment, err := s.databaseClient.FindDeployment(in.ID)
 	if err != nil {
-		s.log.Error("Delete deployment error", err)
+		s.log.Error("Delete deployment error: couldn't find deployment", err)
+		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()
+	}
+	if deployment == nil {
+		s.log.Info(fmt.Sprintf("Delete deployment - deployment not found with id %d", in.ID))
+		return &commonTypes.Empty{}, status.New(http.StatusBadRequest, "").Err()
+	}
+	err = s.databaseClient.DeleteDeployment(deployment)
+	if err != nil {
+		s.log.Error("Delete deployment error - couldn't delete deployment", err)
 		return &commonTypes.Empty{}, status.New(http.StatusInternalServerError, "").Err()
 	}
 	s.deleteChan <- *deployment

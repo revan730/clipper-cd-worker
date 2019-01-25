@@ -40,7 +40,7 @@ func (w *Worker) recordRevision(d types.Deployment, stdout string) error {
 // updateDeploymentImage calls kubectl to change deployment image, using
 // lock to syncronize update operations on deployment
 func (w *Worker) updateDeploymentImage(dep types.Deployment, artifactID int64) {
-	artifact, err := w.ciClient.GetBuildArtifactByID(dep.ArtifactID)
+	artifact, err := w.ciClient.GetBuildArtifactByID(artifactID)
 	if err != nil {
 		w.log.Error("Failed to get build artifact", err)
 		return
@@ -226,6 +226,10 @@ func (w *Worker) deleteFromProto(d types.Deployment) {
 	deployment, err := w.databaseClient.FindDeployment(d.ID)
 	if err != nil {
 		w.log.Error("Failed to find deployment", err)
+		return
+	}
+	if deployment == nil {
+		w.log.Info(fmt.Sprintf("DeleteDeployment: deployment not found with id %d", d.ID))
 		return
 	}
 	lockRes := strconv.FormatInt(d.ID, 10)
