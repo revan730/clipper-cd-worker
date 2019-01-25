@@ -223,22 +223,16 @@ func (w *Worker) updateManifestFromProto(d types.Deployment) {
 }
 
 func (w *Worker) deleteFromProto(d types.Deployment) {
-	deployment, err := w.databaseClient.FindDeployment(d.ID)
-	if err != nil {
-		w.log.Error("Failed to find deployment", err)
-		return
-	}
-	if deployment == nil {
-		w.log.Info(fmt.Sprintf("DeleteDeployment: deployment not found with id %d", d.ID))
+	if d.IsInitialized != true {
 		return
 	}
 	lockRes := strconv.FormatInt(d.ID, 10)
-	err = w.distLock.Lock(lockRes)
+	err := w.distLock.Lock(lockRes)
 	if err != nil {
 		w.log.Error("Failed to acquire deployment lock", err)
 		return
 	}
-	w.deleteDeployment(*deployment)
+	w.deleteDeployment(d)
 	err = w.distLock.Unlock(lockRes)
 	if err != nil {
 		w.log.Error("Failed to release deployment lock", err)
