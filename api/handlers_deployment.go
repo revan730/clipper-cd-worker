@@ -41,6 +41,20 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 	return &commonTypes.Empty{}, nil
 }
 
+func (s *Server) GetAllDeployments(ctx context.Context, in *commonTypes.DeploymentsQuery) (*commonTypes.DeploymentsArray, error) {
+	deployments, err := s.databaseClient.FindAllDeployments(in.Page, in.Limit)
+	if err != nil {
+		s.log.Error("Find all deployments error", err)
+		return &commonTypes.DeploymentsArray{}, status.New(http.StatusInternalServerError, "").Err()
+	}
+	protoDeps := &commonTypes.DeploymentsArray{}
+	for _, dep := range deployments {
+		protoDep := deploymentToProto(dep)
+		protoDeps.Deployments = append(protoDeps.Deployments, protoDep)
+	}
+	return protoDeps, nil
+}
+
 func (s *Server) GetDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Deployment, error) {
 	deployment, err := s.databaseClient.FindDeployment(in.ID)
 	if err != nil {

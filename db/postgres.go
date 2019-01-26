@@ -67,6 +67,18 @@ func (d *PostgresClient) FindDeploymentsByRepo(repoID int64) ([]types.Deployment
 	return deployments, err
 }
 
+func (d *PostgresClient) FindAllDeployments(page, limit int64) ([]*types.Deployment, error) {
+	var deps []*types.Deployment
+	offset := int((page - 1) * limit)
+
+	err := d.pg.Model(&deps).
+		Limit(int(limit)).
+		Offset(offset).
+		Select()
+
+	return deps, err
+}
+
 func (d *PostgresClient) FindDeployment(deploymentID int64) (*types.Deployment, error) {
 	dep := &types.Deployment{
 		ID: deploymentID,

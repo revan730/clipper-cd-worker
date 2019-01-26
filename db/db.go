@@ -8,6 +8,7 @@ type DatabaseClient interface {
 	CreateSchema() error
 	CreateDeployment(kd *types.Deployment) error
 	DeleteDeployment(kd *types.Deployment) error
+	FindAllDeployments(page, limit int64) ([]*types.Deployment, error)
 	FindDeployment(deploymentID int64) (*types.Deployment, error)
 	FindDeploymentsByRepo(repoID int64) ([]types.Deployment, error)
 	CreateRevision(r *types.Revision) error
