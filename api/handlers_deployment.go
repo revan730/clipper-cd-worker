@@ -49,7 +49,7 @@ func (s *Server) GetDeployment(ctx context.Context, in *commonTypes.Deployment) 
 	}
 	if deployment == nil {
 		s.log.Info(fmt.Sprintf("Get deployment - deployment not found with id %d", in.ID))
-		return &commonTypes.Deployment{}, status.New(http.StatusBadRequest, "").Err()
+		return &commonTypes.Deployment{}, status.New(http.StatusNotFound, "").Err()
 	}
 	return deploymentToProto(deployment), nil
 }
