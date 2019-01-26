@@ -10,6 +10,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func deploymentToProto(deployment *types.Deployment) *commonTypes.Deployment {
+	return &commonTypes.Deployment{
+		ID:         deployment.ID,
+		Branch:     deployment.Branch,
+		RepoID:     deployment.RepoID,
+		ArtifactID: deployment.ArtifactID,
+		K8SName:    deployment.K8SName,
+		Manifest:   deployment.Manifest,
+		Replicas:   deployment.Replicas,
+	}
+}
+
 func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
 	deployment := &types.Deployment{
 		Branch:     in.Branch,
@@ -27,6 +39,19 @@ func (s *Server) CreateDeployment(ctx context.Context, in *commonTypes.Deploymen
 	}
 	s.deploymentsChan <- *deployment
 	return &commonTypes.Empty{}, nil
+}
+
+func (s *Server) GetDeployment(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Deployment, error) {
+	deployment, err := s.databaseClient.FindDeployment(in.ID)
+	if err != nil {
+		s.log.Error("Get deployment error", err)
+		return &commonTypes.Deployment{}, status.New(http.StatusInternalServerError, "").Err()
+	}
+	if deployment == nil {
+		s.log.Info(fmt.Sprintf("Get deployment - deployment not found with id %d", in.ID))
+		return &commonTypes.Deployment{}, status.New(http.StatusBadRequest, "").Err()
+	}
+	return deploymentToProto(deployment), nil
 }
 
 func (s *Server) ChangeImage(ctx context.Context, in *commonTypes.Deployment) (*commonTypes.Empty, error) {
