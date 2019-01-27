@@ -99,6 +99,19 @@ func (d *PostgresClient) CreateRevision(r *types.Revision) error {
 	return d.pg.Insert(r)
 }
 
+func (d *PostgresClient) FindRevisions(deploymentID, page, limit int64) ([]*types.Revision, error) {
+	var revisions []*types.Revision
+	offset := int((page - 1) * limit)
+
+	err := d.pg.Model(&revisions).
+		Where("deployment_id = ?", deploymentID).
+		Limit(int(limit)).
+		Offset(offset).
+		Select()
+
+	return revisions, err
+}
+
 // SaveDeployment updates provided deployment in db
 func (d *PostgresClient) SaveDeployment(kd *types.Deployment) error {
 	return d.pg.Update(kd)
