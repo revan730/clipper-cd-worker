@@ -94,6 +94,11 @@ func (d *PostgresClient) FindDeployment(deploymentID int64) (*types.Deployment, 
 	return dep, nil
 }
 
+func (d *PostgresClient) FindDeploymentCount() (int64, error) {
+	count, err := d.pg.Model(&types.Deployment{}).Count()
+	return int64(count), err
+}
+
 // CreateRevision creates deployment revision record from provided struct
 func (d *PostgresClient) CreateRevision(r *types.Revision) error {
 	return d.pg.Insert(r)

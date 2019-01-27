@@ -47,11 +47,17 @@ func (s *Server) GetAllDeployments(ctx context.Context, in *commonTypes.Deployme
 		s.log.Error("Find all deployments error", err)
 		return &commonTypes.DeploymentsArray{}, status.New(http.StatusInternalServerError, "").Err()
 	}
+	count, err := s.databaseClient.FindDeploymentCount()
+	if err != nil {
+		s.log.Error("Find deployments count error", err)
+		return &commonTypes.DeploymentsArray{}, status.New(http.StatusInternalServerError, "").Err()
+	}
 	protoDeps := &commonTypes.DeploymentsArray{}
 	for _, dep := range deployments {
 		protoDep := deploymentToProto(dep)
 		protoDeps.Deployments = append(protoDeps.Deployments, protoDep)
 	}
+	protoDeps.Total = count
 	return protoDeps, nil
 }
 

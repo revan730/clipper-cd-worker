@@ -10,6 +10,7 @@ type DatabaseClient interface {
 	DeleteDeployment(kd *types.Deployment) error
 	FindAllDeployments(page, limit int64) ([]*types.Deployment, error)
 	FindDeployment(deploymentID int64) (*types.Deployment, error)
+	FindDeploymentCount() (int64, error)
 	FindDeploymentsByRepo(repoID int64) ([]types.Deployment, error)
 	CreateRevision(r *types.Revision) error
 	FindRevisions(deploymentID, page, limit int64) ([]*types.Revision, error)
