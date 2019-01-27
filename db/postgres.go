@@ -112,6 +112,13 @@ func (d *PostgresClient) FindRevisions(deploymentID, page, limit int64) ([]*type
 	return revisions, err
 }
 
+func (d *PostgresClient) FindRevisionsCount(deploymentID int64) (int64, error) {
+	count, err := d.pg.Model(&types.Revision{}).
+		Where("deployment_id = ?", deploymentID).
+		Count()
+	return int64(count), err
+}
+
 // SaveDeployment updates provided deployment in db
 func (d *PostgresClient) SaveDeployment(kd *types.Deployment) error {
 	return d.pg.Update(kd)

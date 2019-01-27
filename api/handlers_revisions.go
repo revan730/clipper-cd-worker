@@ -28,10 +28,16 @@ func (s *Server) GetRevisions(ctx context.Context, in *commonTypes.RevisionsQuer
 		s.log.Error("Find revisions error", err)
 		return &commonTypes.RevisionsArray{}, status.New(http.StatusInternalServerError, "").Err()
 	}
+	count, err := s.databaseClient.FindRevisionsCount(in.DeploymentID)
+	if err != nil {
+		s.log.Error("Find revisions count error", err)
+		return &commonTypes.RevisionsArray{}, status.New(http.StatusInternalServerError, "").Err()
+	}
 	protoRevisions := &commonTypes.RevisionsArray{}
 	for _, revision := range revisions {
 		protoRevision := revisionToProto(revision)
 		protoRevisions.Revisions = append(protoRevisions.Revisions, protoRevision)
 	}
+	protoRevisions.Total = count
 	return protoRevisions, nil
 }
