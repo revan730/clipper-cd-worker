@@ -12,13 +12,14 @@ import (
 
 func deploymentToProto(deployment *types.Deployment) *commonTypes.Deployment {
 	return &commonTypes.Deployment{
-		ID:         deployment.ID,
-		Branch:     deployment.Branch,
-		RepoID:     deployment.RepoID,
-		ArtifactID: deployment.ArtifactID,
-		K8SName:    deployment.K8SName,
-		Manifest:   deployment.Manifest,
-		Replicas:   deployment.Replicas,
+		ID:            deployment.ID,
+		Branch:        deployment.Branch,
+		RepoID:        deployment.RepoID,
+		ArtifactID:    deployment.ArtifactID,
+		IsInitialized: deployment.IsInitialized,
+		K8SName:       deployment.K8SName,
+		Manifest:      deployment.Manifest,
+		Replicas:      deployment.Replicas,
 	}
 }
 
