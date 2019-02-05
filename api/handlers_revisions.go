@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	ptypes "github.com/golang/protobuf/ptypes"
@@ -20,6 +21,19 @@ func revisionToProto(r *types.Revision) *commonTypes.Revision {
 		Stdout:       r.Stdout,
 		Replicas:     r.Replicas,
 	}
+}
+
+func (s *Server) GetRevision(ctx context.Context, in *commonTypes.Revision) (*commonTypes.Revision, error) {
+	revision, err := s.databaseClient.FindRevision(in.ID)
+	if err != nil {
+		s.log.Error("Get revision error", err)
+		return &commonTypes.Revision{}, status.New(http.StatusInternalServerError, "").Err()
+	}
+	if revision == nil {
+		s.log.Info(fmt.Sprintf("Get revision - revision not found with id %d", in.ID))
+		return &commonTypes.Revision{}, status.New(http.StatusNotFound, "").Err()
+	}
+	return revisionToProto(revision), nil
 }
 
 func (s *Server) GetRevisions(ctx context.Context, in *commonTypes.RevisionsQuery) (*commonTypes.RevisionsArray, error) {

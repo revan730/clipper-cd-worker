@@ -104,6 +104,21 @@ func (d *PostgresClient) CreateRevision(r *types.Revision) error {
 	return d.pg.Insert(r)
 }
 
+func (d *PostgresClient) FindRevision(revisionID int64) (*types.Revision, error) {
+	r := &types.Revision{
+		ID: revisionID,
+	}
+
+	err := d.pg.Select(r)
+	if err != nil {
+		if err == pg.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return r, nil
+}
+
 func (d *PostgresClient) FindRevisions(deploymentID, page, limit int64) ([]*types.Revision, error) {
 	var revisions []*types.Revision
 	offset := int((page - 1) * limit)
